@@ -45,6 +45,7 @@ var rootCmd = &cobra.Command{
 		times, _ := cmd.Flags().GetInt("times")
 		shouldClear, _ := cmd.Flags().GetBool("clear")
 		verbose, _ := cmd.Flags().GetBool("verbose")
+		ignoreFail, _ := cmd.Flags().GetBool("ignore-fail")
 
 		command := getCommandToExecute()
 
@@ -64,7 +65,7 @@ var rootCmd = &cobra.Command{
 
 			}
 
-			if err := startProcess(command); err != nil {
+			if err := startProcess(command); err != nil && !ignoreFail {
 				log.Fatal(err)
 			}
 
@@ -77,6 +78,7 @@ func main() {
 	rootCmd.Flags().IntP("times", "t", 2, "Number of times to repeat the command")
 	rootCmd.Flags().BoolP("clear", "c", false, "Clear the screen before each command")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Print the command before executing it")
+	rootCmd.Flags().Bool("ignore-fail", false, "Do not fail if the command fails, but continue to the next iteration")
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
