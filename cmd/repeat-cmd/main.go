@@ -5,16 +5,9 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
+	"utils/lib/process"
 )
-
-func startProcess(command []string) error {
-	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
 
 func getCommandToExecute() []string {
 	// Get the index of the "--" separator
@@ -40,7 +33,7 @@ func getCommandToExecute() []string {
 
 var rootCmd = &cobra.Command{
 	Short: "Repeat a command a number of times",
-	Use:   `repeat [flags] -- [command]`,
+	Use:   `repeat-cmd [flags] -- [command]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		times, _ := cmd.Flags().GetInt("times")
 		shouldClear, _ := cmd.Flags().GetBool("clear")
@@ -50,10 +43,8 @@ var rootCmd = &cobra.Command{
 		command := getCommandToExecute()
 
 		for i := 0; i < times; i++ {
-			if shouldClear && i > 0 {
-				cmd := exec.Command("clear")
-				cmd.Stdout = os.Stdout
-				_ = cmd.Run()
+			if shouldClear && (i > 0 || verbose) {
+				_ = process.Run([]string{"clear"}, true)
 			}
 
 			if verbose && (i == 0 || shouldClear) {
@@ -65,8 +56,9 @@ var rootCmd = &cobra.Command{
 
 			}
 
-			if err := startProcess(command); err != nil && !ignoreFail {
-				log.Fatal(err)
+			if err := process.Run(command, true); err != nil && !ignoreFail {
+				log.Print(err)
+				os.Exit(err.Status())
 			}
 
 		}
@@ -75,9 +67,9 @@ var rootCmd = &cobra.Command{
 
 func main() {
 
-	rootCmd.Flags().IntP("times", "t", 2, "Number of times to repeat the command")
-	rootCmd.Flags().BoolP("clear", "c", false, "Clear the screen before each command")
-	rootCmd.Flags().BoolP("verbose", "v", false, "Print the command before executing it")
+	rootCmd.Flags().IntP("times", "t", 100, "Number of times to repeat the command")
+	rootCmd.Flags().BoolP("clear", "c", true, "Clear the screen before each command")
+	rootCmd.Flags().BoolP("verbose", "v", true, "Print the command before executing it")
 	rootCmd.Flags().Bool("ignore-fail", false, "Do not fail if the command fails, but continue to the next iteration")
 
 	if err := rootCmd.Execute(); err != nil {
