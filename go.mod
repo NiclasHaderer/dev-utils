@@ -1,4 +1,4 @@
-module utils
+module dev-utils
 
 go 1.22
 

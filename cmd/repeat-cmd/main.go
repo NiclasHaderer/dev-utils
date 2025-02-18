@@ -1,12 +1,13 @@
 package main
 
 import (
+	"dev-utils/lib/config"
+	"dev-utils/lib/process"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strings"
-	"utils/lib/process"
 )
 
 func getCommandToExecute() []string {
@@ -32,7 +33,7 @@ func getCommandToExecute() []string {
 }
 
 var rootCmd = &cobra.Command{
-	Short: "Repeat a command a number of times",
+	Short: "Util for repeating a certain command. Use \" -- \" to separate flags and command",
 	Use:   `repeat-cmd [flags] -- [command]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		times, _ := cmd.Flags().GetInt("times")
@@ -66,6 +67,7 @@ var rootCmd = &cobra.Command{
 }
 
 func main() {
+	rootCmd.Version = config.Version
 
 	rootCmd.Flags().IntP("times", "t", 100, "Number of times to repeat the command")
 	rootCmd.Flags().BoolP("clear", "c", true, "Clear the screen before each command")
