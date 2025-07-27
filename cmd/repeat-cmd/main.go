@@ -43,6 +43,7 @@ var rootCmd = &cobra.Command{
 
 		command := getCommandToExecute()
 
+		failCount := 0
 		for i := 0; i < times; i++ {
 			if shouldClear && (i > 0 || verbose) {
 				_ = process.Run([]string{"clear"}, true)
@@ -57,11 +58,19 @@ var rootCmd = &cobra.Command{
 
 			}
 
-			if err := process.Run(command, true); err != nil && !ignoreFail {
-				log.Print(err)
-				os.Exit(err.Status())
+			if err := process.Run(command, true); err != nil {
+				if ignoreFail {
+					failCount += 1
+				} else {
+					log.Print(err)
+					os.Exit(err.Status())
+				}
 			}
 
+		}
+
+		if ignoreFail {
+			fmt.Printf("Command failed %d out of %d times.\n", failCount, times)
 		}
 	},
 }
